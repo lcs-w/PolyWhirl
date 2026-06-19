@@ -1,7 +1,7 @@
 from typing import List, Dict
 import ast
 
-from PolyDirection import PolyDirection
+from src.PolyDirection import PolyDirection
 
 
 class PolyOrderBook:

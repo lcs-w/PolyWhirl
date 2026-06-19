@@ -1,8 +1,8 @@
 import requests
 from typing import List, Dict
 
-from PolyMarket import PolyMarket
-from PolyAPI import POLY_GAMMA_API_URL
+from src.PolyMarket import PolyMarket
+from src.PolyAPI import POLY_GAMMA_API_URL
 
 
 def list_event() -> Dict:

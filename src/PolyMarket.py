@@ -4,15 +4,16 @@ import asyncio
 from typing import Dict, List
 import requests
 
-from PolyAPI import POLY_GAMMA_API_URL, POLY_CLOB_API_URL
-from PolyOrderBook import PolyOrderBook
-from PolyDirection import PolyDirection
+from src.PolyAPI import POLY_GAMMA_API_URL, POLY_CLOB_API_URL
+from src.PolyOrderBook import PolyOrderBook
+from src.PolyDirection import PolyDirection
 
 
 class PolyMarket:
     def __init__(self, market: Dict = None, slug: str = None):
         self._market = market
         self._slug = slug
+        self._token_ids: Dict = {}
 
     @property
     def market_url(self):
@@ -34,6 +35,14 @@ class PolyMarket:
     def slug(self, slug_str: str):
         self._slug = slug_str
 
+    @property
+    def token_ids(self):
+        return self._token_ids
+
+    @token_ids.setter
+    def token_ids(self, token_ids: Dict):
+        self._token_ids = token_ids
+
     def get_market(
         self, requests_session: requests.Session, include_tag: bool = False
     ) -> dict:
@@ -46,6 +55,10 @@ class PolyMarket:
                 self.market["clobTokenIds"] = ast.literal_eval(
                     self.market["clobTokenIds"]
                 )
+                self.token_id = {
+                    str(PolyDirection.YES): self.market["clobTokenIds"][0],
+                    str(PolyDirection.NO): self.market["clobTokenIds"][1],
+                }
                 return self.market
         except requests.RequestException:
             return {}
@@ -56,11 +69,7 @@ class PolyMarket:
         direction: PolyDirection = PolyDirection.YES,
     ) -> PolyOrderBook:
         """Fetch order book for the provided direction with aiohttp. Default to be Yes."""
-        token_id = (
-            self.market["clobTokenIds"][0]
-            if direction == PolyDirection.YES
-            else self.market["clobTokenIds"][1]
-        )
+        token_id = self.token_id[str(direction)]
 
         order_book = PolyOrderBook()
         order_book.direction = direction
@@ -83,11 +92,7 @@ class PolyMarket:
     ) -> PolyOrderBook:
         """Fetch order book for the provided direction with aiohttp. Default to be Yes."""
         # Determine the token ID
-        token_id = (
-            self.market["clobTokenIds"][0]
-            if direction == PolyDirection.YES
-            else self.market["clobTokenIds"][1]
-        )
+        token_id = self.token_id[str(direction)]
 
         order_book = PolyOrderBook()
         order_book.direction = direction
@@ -116,10 +121,3 @@ class PolyMarket:
         ]
 
         return await asyncio.gather(*tasks)
-
-
-if __name__ == "__main__":
-    spaceX_1T_ipo = PolyMarket()
-    spaceX_1T_ipo.slug = "spacex-ipo-closing-market-cap-above-1t-274-469"
-    spaceX_1T_ipo.get_market()
-    print(spaceX_1T_ipo.market)
