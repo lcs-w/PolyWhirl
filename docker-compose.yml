@@ -1,0 +1,90 @@
+# Source - https://stackoverflow.com/a/62216208
+# Posted by Robin Moffatt, modified by community. See post 'Timeline' for change history
+# Retrieved 2026-06-16, License - CC BY-SA 4.0
+
+version: '3.8'
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    depends_on:
+      - zookeeper
+    ports:
+      - 9092:9092
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+  redis:
+  # https://university.redis.io/learningpath/14q8m6gilfwltm?tab=details
+    image: redis/redis-stack:7.4.0-v8
+    container_name: polymarket-hft-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+      - "8001:8001"
+    environment:
+      - >
+        REDIS_ARGS=
+        --protected-mode no
+        --save ""
+        --appendonly no
+        --maxmemory 2gb
+        --maxmemory-policy allkeys-lru
+        --hz 100
+        --dynamic-hz yes
+        --aof-use-rdb-preamble no
+        --no-appendfsync-on-rewrite yes
+        --latency-monitor-threshold 1
+        --latency-tracking yes
+        --slowlog-log-slower-than 1000
+        --slowlog-max-len 256
+        --loglevel notice
+        --tcp-keepalive 60
+        --timeout 0
+        --tcp-backlog 511
+        --bind 0.0.0.0
+    volumes:
+      - redis-data:/data
+    networks:
+      - hft-net
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+    sysctls:
+      net.core.somaxconn: 1024
+      net.ipv4.tcp_syncookies: 0
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 2.5G
+        reservations:
+          cpus: "1.0"
+          memory: 2G
+
+volumes:
+  redis-data:
+    driver: local
+
+networks:
+  hft-net:
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: hft-br0
