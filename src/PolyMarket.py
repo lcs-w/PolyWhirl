@@ -7,6 +7,7 @@ import requests
 from src.PolyAPI import POLY_GAMMA_API_URL, POLY_CLOB_API_URL
 from src.PolyOrderBook import PolyOrderBook
 from src.PolyDirection import PolyDirection
+from src.PolyTokenEssence import PolyTokenEssence
 
 
 class PolyMarket:
@@ -55,7 +56,7 @@ class PolyMarket:
                 self.market["clobTokenIds"] = ast.literal_eval(
                     self.market["clobTokenIds"]
                 )
-                self.token_id = {
+                self.token_ids = {
                     str(PolyDirection.YES): self.market["clobTokenIds"][0],
                     str(PolyDirection.NO): self.market["clobTokenIds"][1],
                 }
@@ -69,7 +70,7 @@ class PolyMarket:
         direction: PolyDirection = PolyDirection.YES,
     ) -> PolyOrderBook:
         """Fetch order book for the provided direction with aiohttp. Default to be Yes."""
-        token_id = self.token_id[str(direction)]
+        token_id = self.token_ids[str(direction)]
 
         order_book = PolyOrderBook()
         order_book.direction = direction
@@ -92,7 +93,7 @@ class PolyMarket:
     ) -> PolyOrderBook:
         """Fetch order book for the provided direction with aiohttp. Default to be Yes."""
         # Determine the token ID
-        token_id = self.token_id[str(direction)]
+        token_id = self.token_ids[str(direction)]
 
         order_book = PolyOrderBook()
         order_book.direction = direction
@@ -121,3 +122,10 @@ class PolyMarket:
         ]
 
         return await asyncio.gather(*tasks)
+
+    def get_token_essence_pair(self) -> List:
+        """return a pair of token essence objects for both directions"""
+        return [
+            PolyTokenEssence(self.token_ids["Yes"], self.slug, PolyDirection.YES),
+            PolyTokenEssence(self.token_ids["No"], self.slug, PolyDirection.NO),
+        ]
