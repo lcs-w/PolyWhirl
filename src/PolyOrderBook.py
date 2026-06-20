@@ -59,6 +59,9 @@ class PolyOrderBook:
         )
         self.asks_lowest = self.asks[0] if self.asks else {}
 
+        self.last_trade_price = float(value.get("last_trade_price", -1.0))
+        self.tick_size = float(value.get("tick_size", -1.0))
+
     @property
     def market_slug(self) -> str:
         return self._market_slug
