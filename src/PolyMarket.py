@@ -123,7 +123,7 @@ class PolyMarket:
 
         return await asyncio.gather(*tasks)
 
-    def get_token_essence_pair(self) -> List:
+    def get_token_essence_pair(self) -> List[PolyTokenEssence]:
         """return a pair of token essence objects for both directions"""
         return [
             PolyTokenEssence(self.token_ids["Yes"], self.slug, PolyDirection.YES),
