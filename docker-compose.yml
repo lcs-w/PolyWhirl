@@ -2,8 +2,34 @@
 # Posted by Robin Moffatt, modified by community. See post 'Timeline' for change history
 # Retrieved 2026-06-16, License - CC BY-SA 4.0
 
-version: '3.8'
 services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    restart: unless-stopped
+    # Remove the 'deploy' block below if you have no GPU
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+              
+  ollama-init:
+    image: ollama/ollama:latest
+    depends_on:
+      - ollama
+    entrypoint: >
+      sh -c "sleep 5 && ollama pull gemma3:4b"
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+    restart: "no"
+    
   zookeeper:
     image: confluentinc/cp-zookeeper:latest
     environment:
@@ -81,6 +107,8 @@ services:
 
 volumes:
   redis-data:
+    driver: local
+  ollama_data:
     driver: local
 
 networks:
