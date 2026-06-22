@@ -36,9 +36,11 @@ class PolyEvent:
     def slug(self, slug_str: str):
         self._slug = slug_str
 
-    def get_event(self, include_chat: bool = False) -> dict:
+    def get_event(
+        self, r_session: requests.Session, include_chat: bool = False
+    ) -> dict:
         try:
-            response = requests.get(
+            response = r_session.get(
                 f"{self.event_url}?include_chat={str(include_chat).lower()}"
             )
             if response.status_code == 200:
@@ -52,10 +54,17 @@ class PolyEvent:
         except requests.RequestException:
             return {}
 
+    def get_markets_slugs(self) -> List:
+        if self.markets:
+            return [m.slug for m in self.markets]
+
 
 if __name__ == "__main__":
-    spaceX_ipo_cap = PolyEvent()
-    spaceX_ipo_cap.slug = "spacex-ipo-closing-market-cap-above"
-    spaceX_ipo_cap.get_event()
-    for m in spaceX_ipo_cap.markets:
-        print(m.market["slug"])
+    pe = PolyEvent()
+    pe.slug = "starmer-out-in-2025"
+    with requests.Session() as r_session:
+        pe.get_event(r_session)
+    # [m.get("slug", "") for m in pe.event.get("markets", [])]
+    print([m.slug for m in pe.markets])
+
+    # pe.markets[0].market
