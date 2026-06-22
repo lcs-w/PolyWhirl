@@ -12,13 +12,13 @@ from src.PolyTokenEssence import PolyTokenEssence
 
 class PolyMarket:
     def __init__(self, market: Dict = None, slug: str = None):
-        self._market = market
-        self._slug = slug
-        self._token_ids: Dict = {}
+        self.market = market
+        if slug is not None:
+            self.slug = slug
 
     @property
     def market_url(self):
-        return f"{POLY_GAMMA_API_URL}/markets/slug/{self._slug}"
+        return f"{POLY_GAMMA_API_URL}/markets/slug/{self.slug}"
 
     @property
     def market(self):
@@ -27,6 +27,7 @@ class PolyMarket:
     @market.setter
     def market(self, market_value: Dict):
         self._market = market_value
+        self.slug = market_value["slug"]
 
     @property
     def slug(self):
