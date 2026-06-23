@@ -1,5 +1,5 @@
 from typing import List, Dict
-import ast
+import polars as pl
 
 from src.PolyDirection import PolyDirection
 
@@ -59,7 +59,6 @@ class PolyOrderBook:
         )
         self.asks_lowest = self.asks[0] if self.asks else {}
 
-        self.last_trade_price = float(value.get("last_trade_price", -1.0))
         self.tick_size = float(value.get("tick_size", -1.0))
 
     @property
@@ -77,6 +76,47 @@ class PolyOrderBook:
     @direction.setter
     def direction(self, value: PolyDirection):
         self._direction = value
+
+    def _create_price_size_df(
+        self, price_size_dict: List[Dict], is_bid: bool
+    ) -> pl.DataFrame:
+        """
+        Args:
+            price_size_dict (List[Dict]): a list of dictionaries with price-size pairs
+            bid (bool): True if they are bids, False if they are asks
+
+        Returns:
+            pl.DataFrame: a DataFrame with price as columns (0.01 to 0.99), size as value
+        """
+        df = pl.DataFrame(
+            schema=pl.Struct(
+                [pl.Field("timestamp", pl.Int64)]
+                + [pl.Field("bid", pl.Boolean)]  # a boolean: 0 or 1
+                + [pl.Field(f"{price/100}", pl.Float64) for price in range(1, 100, 1)],
+            ),
+        )
+        row = (
+            {"timestamp": None}
+            | {"bid": is_bid}
+            | {str(b["price"]): b["size"] for b in price_size_dict}
+        )
+
+        result = pl.concat([df, pl.DataFrame([row])], how="diagonal").fill_null(0)
+        return result
+
+    def get_all_bids(self) -> pl.DataFrame:
+        """
+        Returns:
+            pl.DataFrame: returns all bids ordered from the highest
+        """
+        return self._create_price_size_df(self.bids, is_bid=True)
+
+    def get_all_asks(self) -> pl.DataFrame:
+        """
+        Returns:
+            pl.DataFrame: returns all bids ordered from the highest
+        """
+        return self._create_price_size_df(self.asks, is_bid=False)
 
     def __str__(self):
         if self._order_book:
