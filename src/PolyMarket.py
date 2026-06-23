@@ -12,8 +12,9 @@ from src.PolyTokenEssence import PolyTokenEssence
 
 class PolyMarket:
     def __init__(self, market: Dict = None, slug: str = None):
-        self.market = market
-        if slug is not None:
+        if market is not None:
+            self.market = market
+        if (market is None) and (slug is not None):
             self.slug = slug
 
     @property
