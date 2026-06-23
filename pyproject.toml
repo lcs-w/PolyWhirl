@@ -22,4 +22,4 @@ dev = [
 
 [tool.setuptools.packages.find]
 where = ["."]   # search from project root
-include = ["src*", "signal_detection*"]
+# include = ["src*", "signal_detection*"]
