@@ -46,7 +46,6 @@ class PolyStreamer:
             await ws.send_str("PING")
 
     async def get_ob_ws(self, stream_to_redis: bool = True):
-
         r = None
         if stream_to_redis:
             # connect with Redis
@@ -80,7 +79,7 @@ class PolyStreamer:
                         # print(f"Received: {data}")
                         payload = data if isinstance(data, list) else [data]
                         if stream_to_redis and r is not None:
-                            await self.stream_to_redis(r, payload)
+                            asyncio.create_task(self.stream_to_redis(r, payload))
                     elif msg.type == aiohttp.WSMsgType.ERROR:
                         print(f"WebSocket error: {ws.exception()}")
                         break
