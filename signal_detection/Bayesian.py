@@ -1,1 +1,0 @@
-# Bayesion model
