@@ -104,19 +104,27 @@ class PolyOrderBook:
         result = pl.concat([df, pl.DataFrame([row])], how="diagonal").fill_null(0)
         return result
 
-    def get_all_bids(self) -> pl.DataFrame:
+    def get_all_bids(self, transpose: bool = False) -> pl.DataFrame:
         """
         Returns:
             pl.DataFrame: returns all bids ordered from the highest
         """
-        return self._create_price_size_df(self.bids, is_bid=True)
+        if transpose:
+            # TODO:
+            return
+        else:
+            return self._create_price_size_df(self.bids, is_bid=True)
 
-    def get_all_asks(self) -> pl.DataFrame:
+    def get_all_asks(self, transpose: bool = False) -> pl.DataFrame:
         """
         Returns:
             pl.DataFrame: returns all bids ordered from the highest
         """
-        return self._create_price_size_df(self.asks, is_bid=False)
+        if transpose:
+            # TODO:
+            return
+        else:
+            return self._create_price_size_df(self.asks, is_bid=False)
 
     def __str__(self):
         if self._order_book:

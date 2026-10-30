@@ -61,7 +61,7 @@ class PolyEvent:
 
 if __name__ == "__main__":
     pe = PolyEvent()
-    pe.slug = "starmer-out-in-2025"
+    pe.slug = "us-iran-final-nuclear-deal-by-20260621201254412"
     with requests.Session() as r_session:
         pe.get_event(r_session)
     # [m.get("slug", "") for m in pe.event.get("markets", [])]

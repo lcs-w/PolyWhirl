@@ -98,11 +98,10 @@ class PolyStreamer:
 
             essence = self.token_essence_dict[m.get("asset_id")]
             await r.xadd(
-                essence["market_slug"],
+                f"{essence["market_slug"]}:{m.get("event_type", "")}",
                 {
                     "direction": essence["direction"],
                     "timestamp": str(m.get("timestamp", "")),
-                    "event_type": str(m.get("event_type")),
                     "raw": str(m),
                 },
             )
@@ -112,19 +111,26 @@ if __name__ == "__main__":
     from datetime import datetime
     import requests
 
-    next_15m = int(((datetime.now().timestamp() // 300) + 1) * 300)
+    from src.PolyEvent import PolyEvent
 
-    pm = PolyMarket()
-    pm.slug = f"btc-updown-5m-{next_15m}"
-    print(pm.slug)
+    # next_15m = int(((datetime.now().timestamp() // 300) + 1) * 300)
 
-    # create a requests session
-    with requests.Session() as requests_session:
-        pm.get_market(requests_session)
+    # pm = PolyMarket()
+    # pm.slug = f"btc-updown-5m-{next_15m}"
+    # print(pm.slug)
 
-    print(pm.token_ids)
+    token_essence = []
 
-    token_essence = pm.get_token_essence_pair()
+    pe = PolyEvent()
+    pe.slug = "us-iran-final-nuclear-deal-by-20260621201254412"
+    with requests.Session() as r_session:
+        pe.get_event(r_session)
+
+        for pm in pe.markets:
+            # create a requests session
+            pm.get_market(r_session)
+            token_essence.extend(pm.get_token_essence_pair())
+            print(pm.token_ids)
 
     ps = PolyStreamer()
     ps.token_essence_list = token_essence

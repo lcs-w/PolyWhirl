@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from src.PolyDirection import PolyDirection
 
 
-@dataclass
+@dataclass(frozen=True)
 class PolyTokenEssence:
     """A custome dataclass which attaches token id with market slug and direction for more inituition."""
 
