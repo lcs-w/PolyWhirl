@@ -10,10 +10,13 @@ dependencies = [
     "kafka-python>=3.0.0",
     "openai>=2.43.0",
     "polars>=1.41.2",
+    "pybind11>=3.0.4",
     "python-dotenv>=1.2.2",
     "redis>=8.0.0",
     "requests>=2.34.2",
+    "scikit-build-core>=0.12.2",
 ]
+build-backend = "scikit_build_core.build"
 
 [dependency-groups]
 dev = [
