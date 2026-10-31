@@ -11,6 +11,29 @@ from src.PolyTokenEssence import PolyTokenEssence
 
 
 class PolyMarket:
+    """A single Polymarket market (one question with a YES and a NO token).
+
+    Fetches market metadata from the Gamma API and order books from the CLOB API.
+
+    Usage:
+        pm = PolyMarket(slug="will-it-rain-in-springfield-tomorrow")
+        with requests.Session() as s:
+            pm.get_market(s)                    # fills market and token_ids
+            ob = pm.get_order_book(s)           # YES book by default
+
+    Args:
+        market (Dict, optional): a market dict as returned by the Gamma API, e.g. an
+            entry of an event's "markets"; sets `slug` from it.
+        slug (str, optional): the market slug; used only when `market` is not given.
+
+    Attributes:
+        market (Dict): raw market metadata from the Gamma API.
+        slug (str): the market slug, the last path segment of the market URL.
+        token_ids (Dict[str, str]): {"Yes": token_id, "No": token_id}. Only set by
+            `get_market`, which maps clobTokenIds[0] to YES and [1] to NO.
+        market_url (str): Gamma API endpoint for this market.
+    """
+
     def __init__(self, market: Dict = None, slug: str = None):
         if market is not None:
             self.market = market
