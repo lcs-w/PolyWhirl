@@ -1,3 +1,4 @@
+import time
 from dataclasses import dataclass
 from typing import Dict, List, Optional
 
@@ -23,6 +24,7 @@ class OrderBookFeatures:
     mid_z: float  # z-score of mid vs. recent mids; NaN until the window fills
     obi_ewma: float  # smoothed obi
     vwap_gap: float  # mid - volume-weighted mid; NaN until trades arrive
+    lag_ms: int  # arrival_ms - exchange timestamp; includes local clock skew
 
 
 class OrderBookSignal:
@@ -85,11 +87,21 @@ class OrderBookSignal:
         """Accumulate traded size; it is attached to the next book tick as its volume."""
         self._pending_volume += trade.size
 
-    def on_book(self, order_book: PolyOrderBook) -> Optional[OrderBookFeatures]:
+    def on_book(
+        self, order_book: PolyOrderBook, arrival_ms: Optional[int] = None
+    ) -> Optional[OrderBookFeatures]:
         """Push a YES-token book into the buffer and return its features.
+
+        Args:
+            order_book (PolyOrderBook): the book to process
+            arrival_ms (int, optional): when the book reached this machine, in ms since
+                the epoch, e.g. the Redis stream entry ID. Defaults to now.
 
         Returns None for NO-token books, out-of-order books, and one-sided books.
         """
+        if arrival_ms is None:
+            arrival_ms = time.time_ns() // 1_000_000
+
         if (
             order_book.direction is not PolyDirection.YES
             or order_book.timestamp <= self._last_ts
@@ -120,4 +132,5 @@ class OrderBookSignal:
             mid_z=self.buffer.mid_zscore(self.z_window),
             obi_ewma=self.buffer.imbalance_ewma(self.alpha),
             vwap_gap=mid - self.buffer.vwap(self.vwap_n),
+            lag_ms=arrival_ms - order_book.timestamp,
         )
