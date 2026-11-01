@@ -4,6 +4,14 @@ import numpy.typing as npt
 COLUMNS: tuple[str, str, str, str, str]
 
 class TickBuffer:
+    """Fixed-capacity C++ ring buffer of the last N order-book ticks.
+
+    Each tick is (mid, spread, imbalance, timestamp, volume). Once the buffer is full,
+    a new tick overwrites the oldest one. Index 0 is the oldest tick and -1 the newest.
+    Feature methods (vwap, z-score, EWMA) run in C++. Array exports return numpy
+    copies, oldest first. Not thread-safe.
+    """
+
     def __init__(self, capacity: int) -> None: ...
     def push(
         self, mid: float, spread: float, imbalance: float, timestamp: int, volume: float = 0.0
