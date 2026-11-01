@@ -154,3 +154,24 @@ class PolyMarket:
             PolyTokenEssence(self.token_ids["Yes"], self.slug, PolyDirection.YES),
             PolyTokenEssence(self.token_ids["No"], self.slug, PolyDirection.NO),
         ]
+
+    def __str__(self):
+        # attributes may not exist yet on a newly initialized PM
+        slug = getattr(self, "_slug", None)
+        market = getattr(self, "_market", None)
+        if not market:
+            return f"PolyMarket(slug={slug}, market not fetched)"
+
+        prices = market.get("outcomePrices")
+        if isinstance(prices, str):
+            prices = ast.literal_eval(prices)
+        yes_price, no_price = prices if prices else (None, None)
+
+        if market.get("closed"):
+            status = "closed"
+        elif market.get("active"):
+            status = "active"
+        else:
+            status = "inactive"
+
+        return f"PolyMarket(slug={slug}, yes={yes_price}, no={no_price}, status={status}, end_date={market.get('endDate')})"
