@@ -93,7 +93,7 @@ uv rebuilds the extension automatically when `CMakeLists.txt` or anything in `fe
 # Just Redis (all you need for streaming):
 docker compose up -d redis
 
-# Or everything: Redis, Ollama (+ pulls gemma3:4b), Kafka, Zookeeper
+# Or everything: Redis, Ollama (+ pulls gemma3:4b)
 docker compose up -d
 ```
 
