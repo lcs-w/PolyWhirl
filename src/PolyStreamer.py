@@ -13,7 +13,12 @@ from src.PolyTokenEssence import PolyTokenEssence
 
 class PolyStreamer:
     """
-    Stream Order Book with WebSocket to redis server
+    Stream Polymarket market-channel WebSocket events into Redis Streams.
+
+    Subscribes to every token in `token_essence_list` and XADDs each message to
+    `{market_slug}:{event_type}` with fields `direction` (1 = YES, 0 = NO),
+    `timestamp` (exchange ms) and `raw`. Messages without a known top-level
+    `asset_id` are skipped. Sends PING every 10s to keep the connection alive.
     """
 
     def __init__(self, token_essence: Optional[List[PolyTokenEssence]] = None):
