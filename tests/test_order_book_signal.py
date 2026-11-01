@@ -1,4 +1,5 @@
 import math
+import time
 
 import pytest
 
@@ -8,7 +9,12 @@ from src.PolyDirection import PolyDirection
 from src.PolyOrderBook import PolyOrderBook
 
 
-def make_book(ts, bids, asks, direction=PolyDirection.YES):
+def make_book(
+    ts: int,
+    bids: list[tuple[float, float]],  # list of (price, size) pairs
+    asks: list[tuple[float, float]],
+    direction: PolyDirection = PolyDirection.YES,
+) -> PolyOrderBook:
     ob = PolyOrderBook()
     ob.direction = direction
     ob.order_book = {
@@ -21,7 +27,9 @@ def make_book(ts, bids, asks, direction=PolyDirection.YES):
 
 def test_microprice_leans_toward_thin_side():
     # more bid size -> price more likely to tick up -> microprice above mid
-    mp = OrderBookSignal.microprice({"price": 0.48, "size": 300}, {"price": 0.52, "size": 100})
+    mp = OrderBookSignal.microprice(
+        {"price": 0.48, "size": 300}, {"price": 0.52, "size": 100}
+    )
     assert mp == pytest.approx(0.51)
 
 
@@ -71,6 +79,19 @@ def test_trades_become_volume_of_next_tick():
     f = sig.on_book(make_book(1300, [(0.50, 1)], [(0.54, 1)]))
     assert sig.buffer.volumes().tolist() == [0.0, 25.0]
     assert f.vwap_gap == pytest.approx(0.0)  # only the latest tick has volume
+
+
+def test_lag_ms_from_arrival_time():
+    sig = OrderBookSignal()
+    f = sig.on_book(make_book(1000, [(0.48, 1)], [(0.52, 1)]), arrival_ms=1250)
+    assert f.lag_ms == 250
+
+
+def test_lag_ms_defaults_to_now():
+    sig = OrderBookSignal()
+    exchange_ms = time.time_ns() // 1_000_000 - 100
+    f = sig.on_book(make_book(exchange_ms, [(0.48, 1)], [(0.52, 1)]))
+    assert 100 <= f.lag_ms < 5_000
 
 
 def test_mid_zscore_after_window_fills():
