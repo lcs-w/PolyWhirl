@@ -12,5 +12,5 @@ wheels/
 # Virtual environments
 .venv
 
-# Analytical notebooks
-notebooks/
+# Scratch notebooks
+notebooks/_*
