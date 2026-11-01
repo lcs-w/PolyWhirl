@@ -8,8 +8,6 @@ PolyWhirl subscribes to Polymarket's CLOB market WebSocket, persists every order
 
 ## Architecture
 
-### Today
-
 ```
                      Gamma API (REST)                     CLOB API (REST)
               event / market metadata, token IDs        /book snapshots
@@ -47,23 +45,6 @@ PolyWhirl subscribes to Polymarket's CLOB market WebSocket, persists every order
                                      [ Combined trade signal ]  (planned)
 ```
 
-### Target design
-
-The longer-term plan moves the hot path out of Python:
-
-```
-[Polymarket WebSocket]
-       │  asyncio I/O
-       ▼
-[ZeroMQ / IPC pipeline]
-       │  bypass the GIL
-       ▼
-[C++ engine (pybind11)] ──► lock-free ring buffer ──► [Bayesian log-likelihood engine]
-                                                                │
-                                                                ▼
-                                                   [Real-time toxic-flow signal]
-```
-
 The first piece is in place: the C++ [`TickBuffer`](#tickbuffer-c) feature engine, built with `pybind11` and `scikit-build-core`.
 
 ## Repository layout
@@ -84,8 +65,8 @@ The first piece is in place: the C++ [`TickBuffer`](#tickbuffer-c) feature engin
 | [tests/](tests/) | pytest suite for `TickBuffer` and `OrderBookSignal`. |
 | [src/requests_v_aiohttp.py](src/requests_v_aiohttp.py), [src/redis_connect.py](src/redis_connect.py) | Latency benchmarks: `requests` vs. `aiohttp`, Redis write cost. |
 | [src/redis_stream.py](src/redis_stream.py) | Legacy REST-polling streamer, superseded by `PolyStreamer`. |
+| `notebooks/` | Exploratory analysis (TickBuffer Benchmarking, Redis connect). |
 | [src/Kafka_producer.py](src/Kafka_producer.py), [src/Kafka_consumer.py](src/Kafka_consumer.py) | Kafka smoke tests (not wired into the pipeline). |
-| `notebooks/` | Exploratory analysis (Polars, visuals). |
 
 ## Prerequisites
 
@@ -121,7 +102,6 @@ docker compose up -d
 | Redis Stack | `6379` | No persistence (`--save ""`), 2 GB LRU cap; data is ephemeral. |
 | RedisInsight | `8001` | Browse streams at <http://localhost:8001>. |
 | Ollama | `11434` | OpenAI-compatible endpoint used by `SentimentDetector`. |
-| Kafka | `9092` | Not used by the pipeline yet. |
 
 ### 3. Stream a Polymarket event into Redis
 
