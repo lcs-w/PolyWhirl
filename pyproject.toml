@@ -8,6 +8,7 @@ dependencies = [
     "aiohttp>=3.14.1",
     "asyncio>=4.0.0",
     "kafka-python>=3.0.0",
+    "numpy>=2.5.4",
     "openai>=2.43.0",
     "polars>=1.41.2",
     "pybind11>=3.0.4",
@@ -16,13 +17,26 @@ dependencies = [
     "requests>=2.34.2",
     "scikit-build-core>=0.12.2",
 ]
+
+[build-system]
+requires = ["scikit-build-core>=0.12.2", "pybind11>=3.0.4"]
 build-backend = "scikit_build_core.build"
 
 [dependency-groups]
 dev = [
     "ipykernel>=7.2.0",
+    "pytest>=9.2.0",
 ]
 
-[tool.setuptools.packages.find]
-where = ["."]   # search from project root
-# include = ["src*", "signal_detection*"]
+[tool.scikit-build]
+minimum-version = "build-system.requires"
+build-dir = "build/{wheel_tag}"
+wheel.packages = ["src", "signal_detection", "feature"]
+
+[tool.uv]
+# rebuild the C++ extension on `uv sync` / `uv run` when these change
+cache-keys = [
+    { file = "pyproject.toml" },
+    { file = "CMakeLists.txt" },
+    { file = "feature/cpp/*" },
+]

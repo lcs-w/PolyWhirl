@@ -6,8 +6,11 @@ dist/
 wheels/
 *.egg-info
 
+# Test caches
+.pytest_cache/
+
 # Virtual environments
 .venv
 
-# Analytical notebooks
-notebooks/
+# Scratch notebooks
+notebooks/_*
