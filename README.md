@@ -245,13 +245,11 @@ Combining the detectors is the point. For example, high VPIN with strong signed 
 - [x] C++ `TickBuffer` feature engine (pybind11)
 - [x] `OrderBookSignal`: micro-price, depth-weighted imbalance, time-series features
 - [x] `VPIN` core class
-- [ ] Tests for `VPIN`
+- [ ] (Back)Tests for `VPIN`
 - [ ] Redis consumers publishing `{slug}:obsignal` and `{slug}:vpin`
 - [ ] Remaining `OrderBookSignal` ideas: book slope, walls, market-impact simulation
 - [ ] Store `raw` as JSON (`json.dumps`) instead of a Python `repr`, and keep Redis writes in order
 - [ ] Handle batched `price_change` messages
-- [ ] Signal combiner and backtest harness against resolved markets
-- [ ] C++ / ZeroMQ hot path per the target design
 
 ## Disclaimer
 
